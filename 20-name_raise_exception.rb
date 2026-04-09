@@ -7,23 +7,35 @@ class FirstNameError < StandardError; end
 class LastNameError < StandardError; end
 
 class Name
-  attr_accessor :firstname, :lastname
-
   def initialize(firstname, lastname)
     raise FirstNameError, "Firstname cannot be blank" if firstname.nil? || firstname.strip.empty?
     raise LastNameError, "Lastname cannot be blank" if lastname.nil? || lastname.strip.empty?
 
-    raise FirstNameError, "Firstname must start with uppercase letter" unless firstname[0] =~ /[A-Z]/
+    unless firstname[0] == firstname[0].upcase
+      raise FirstNameError, "Firstname must start with uppercase letter"
+    end
 
     @firstname = firstname
     @lastname = lastname
   end
 
   def display
-    puts "Your name is #{@firstname} #{@lastname}"
+    "Your name is #{@firstname} #{@lastname}"
   end
 end
 
 begin
   input = ARGV.join(" ")
-  parts = input.scan(/"[^"]+"|\S+/).map { |x| x
+  parts = input.scan(/"[^"]+"|\S+/)
+
+  firstname = parts[0]&.gsub('"', '')
+  lastname = parts[1]&.gsub('"', '')
+
+  person = Name.new(firstname, lastname)
+  puts person.display
+
+rescue FirstNameError => e
+  puts e.message
+rescue LastNameError => e
+  puts e.message
+end
