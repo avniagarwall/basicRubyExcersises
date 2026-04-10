@@ -1,24 +1,20 @@
-if ARGV.length == 0
+if ARGV.empty?
   puts "Please provide an input"
-  exit
+  exit 1
 end
 
-limit = ARGV[0].to_i
+class Fibonacci
+  def initialize(limit)
+    @limit = limit
+  end
 
-def fibonacci(limit)
-  a = 1
-  b = 1
-
-  yield a
-  yield b
-
-  while true
-    c = a + b
-    break if c > limit
-    yield c
-    a = b
-    b = c
+  def each
+    a, b = 0, 1
+    while b <= @limit
+      yield b
+      a, b = b, a + b
+    end
   end
 end
 
-fibonacci(limit) { |num| print "#{num} " }
+puts Fibonacci.new(ARGV[0].to_i).each{ |num| print "#{num} " }
