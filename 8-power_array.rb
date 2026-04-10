@@ -1,16 +1,19 @@
-if ARGV.length < 2 || ARGV[0].strip.empty?
+if ARGV.empty? || ARGV[0].strip.empty?
   puts "Please provide an input"
   exit
 end
 
-arr = eval(ARGV[0])   
-power_value = ARGV[1].to_i
-
 class Array
-  def power(x)
-    self.map { |num| num ** x }
+  def group_by_length
+    result = Hash.new { |h, k| h[k] = [] }
+
+    each do |element|
+      key = element.to_s.length
+      result[key] << element.to_s
+    end
+
+    result.sort.to_h
   end
 end
 
-result = arr.power(power_value)
-puts result.inspect
+puts eval(ARGV[0]).group_by_length.inspect
