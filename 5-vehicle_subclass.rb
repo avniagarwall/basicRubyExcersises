@@ -1,52 +1,62 @@
 if ARGV.length == 0
   puts "Please provide an input"
-  exit
+  exit 1
 end
 
 class Vehicle
-  attr_accessor :name, :price
+  attr_reader :name, :price
 
   def initialize(name, price)
-    @name = name
-    @price = price.to_f
+    @name  = name
+    @price = Float(price)
   end
 
   def to_s
-    "Bike Name: #{@name}\nBike Price: #{@price}"
+    "Name  : #{@name}\nPrice : #{@price}"
   end
 end
 
 class Bike < Vehicle
-  attr_accessor :dealer, :percent_price_increase
+  attr_reader :dealer, :percent
 
   def initialize(name, price, dealer, percent)
     super(name, price)
-    @dealer = dealer
-    @percent_price_increase = percent.to_f
+    @dealer  = dealer
+    @percent = Float(percent)
   end
 
-  def price_increase
-    @price = @price + (@price * @percent_price_increase / 100)
+  def apply_price_increase
+    @price += @price * @percent / 100
   end
 
   def to_s
-    "Bike Name: #{@name}\nBike Price: #{@price}\nBike Dealer: #{@dealer}"
+    "Name   : #{@name}\nPrice  : #{"%.2f" % @price}\nDealer : #{@dealer}"
   end
 end
 
-input = ARGV.join(" ")
-parts = input.scan(/"[^"]+"|\S+/)
+class InputParser
+  QUOTED_OR_WORD = /"([^"]+)"|(\S+)/
 
-name = parts[0].gsub('"', '')
-price = parts[1]
-dealer = parts[2].gsub('"', '')
-percent = parts[3]
+  def self.parse(args)
+    parts = args.join(" ").scan(QUOTED_OR_WORD).map { |q, w| q || w }
+    raise ArgumentError, "Expected 4 arguments: name price dealer percent" if parts.length < 4
+    {
+      name:    parts[0],
+      price:   parts[1],
+      dealer:  parts[2],
+      percent: parts[3]
+    }
+  end
+end
 
-bike = Bike.new(name, price, dealer, percent)
+data = InputParser.parse(ARGV)
+
+bike = Bike.new(data[:name], data[:price], data[:dealer], data[:percent])
 
 puts bike
+puts
+puts "After #{bike.percent}% price increase:"
+puts
 
-puts "After #{bike.percent_price_increase} percent hike in price:"
-bike.price_increase
-
+bike.apply_price_increase
 puts bike
