@@ -1,25 +1,20 @@
-if ARGV.length == 0 || ARGV[0].strip.empty?
+if ARGV.empty? || ARGV[0].strip.empty?
   puts "Please provide an input"
   exit
 end
 
 class String
   def to_s
-    result = ""
-
-    self.each_char do |ch|
-      if ch >= 'a' && ch <= 'z'
-        result += ch.upcase
-      elsif ch >= 'A' && ch <= 'Z'
-        result += ch.downcase
+    each_char.map do |ch|
+      if ch =~ /[a-z]/
+        ch.upcase
+      elsif ch =~ /[A-Z]/
+        ch.downcase
       else
-        result += ch
+        ch
       end
-    end
-
-    result
+    end.join
   end
 end
 
-str = ARGV[0]
-puts str.to_s
+puts ARGV[0].to_s
