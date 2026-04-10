@@ -1,11 +1,12 @@
-if ARGV.length == 0 || ARGV[0].strip.empty?
+if ARGV.empty? || ARGV[0].strip.empty?
   puts "Please provide an input"
-  exit
+  exit 1
 end
 
 class String
   def palindrome?
-    self == self.reverse
+    cleaned = downcase.gsub(/[^a-z0-9]/, '')
+    cleaned == cleaned.reverse
   end
 end
 
