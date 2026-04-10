@@ -1,9 +1,19 @@
-if ARGV.length == 0
+if ARGV.empty?
   puts "Please provide an input"
-  exit
+  exit 1
 end
 
-str = ARGV[0]
-result = str.gsub(/[aeiouAEIOU]/, '*')
+class VowelMasker
+  VOWELS = /[aeiou]/i
 
-puts result
+  def initialize(str)
+    @str = str.dup
+  end
+
+  def mask
+    @str.gsub!(VOWELS, "*")
+    @str
+  end
+end
+
+puts VowelMasker.new(ARGV[0]).mask
