@@ -1,15 +1,13 @@
-if ARGV.length == 0
-  puts "Please provide an input"
-  exit
+if ARGV.empty?
+  warn "Please provide an input"
+  exit 1
 end
 
-str = ARGV[0]
-count = {}
+ALPHA = /[A-Za-z]/i
 
-str.each_char do |ch|
-  if ch =~ /[A-Za-z]/   
-    count[ch] = count[ch].to_i + 1
-  end
-end
+count = Hash.new(0)
+ARGV[0].each_char { 
+  |ch| count[ch] += 1 if ALPHA.match?(ch) 
+}
 
 puts count
