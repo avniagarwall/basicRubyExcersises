@@ -3,7 +3,7 @@ if ARGV.empty?
   exit 1
 end
 
-ALPHA = /[A-Za-z]/i
+ALPHA = /[A-Za-z]/
 
 count = Hash.new(0)
 ARGV[0].each_char { 
