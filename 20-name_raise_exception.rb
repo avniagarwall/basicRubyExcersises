@@ -1,41 +1,43 @@
-if ARGV.length == 0
+if ARGV.length < 2
   puts "Please provide an input"
   exit
 end
 
-class FirstNameError < StandardError; end
-class LastNameError < StandardError; end
+module NameError
+  class BlankNameError    < StandardError; end
+  class InvalidCaseError  < StandardError; end
+end
 
 class Name
+  attr_reader :firstname, :lastname
+
   def initialize(firstname, lastname)
-    raise FirstNameError, "Firstname cannot be blank" if firstname.nil? || firstname.strip.empty?
-    raise LastNameError, "Lastname cannot be blank" if lastname.nil? || lastname.strip.empty?
-
-    unless firstname[0] == firstname[0].upcase
-      raise FirstNameError, "Firstname must start with uppercase letter"
-    end
-
-    @firstname = firstname
-    @lastname = lastname
+    @firstname = validate_firstname(firstname)
+    @lastname  = validate_lastname(lastname)
   end
 
-  def display
-    "Your name is #{@firstname} #{@lastname}"
+  def to_s
+    "#{@firstname} #{@lastname}"
+  end
+
+  private
+
+  def validate_firstname(name)
+    raise NameError::BlankNameError,   "First name cannot be blank"              if name.strip.empty?
+    raise NameError::InvalidCaseError, "First name must start with a capital letter" unless name[0] =~ /[A-Z]/
+    name
+  end
+
+  def validate_lastname(name)
+    raise NameError::BlankNameError, "Last name cannot be blank" if name.strip.empty?
+    name
   end
 end
 
 begin
-  input = ARGV.join(" ")
-  parts = input.scan(/"[^"]+"|\S+/)
-
-  firstname = parts[0]&.gsub('"', '')
-  lastname = parts[1]&.gsub('"', '')
-
-  person = Name.new(firstname, lastname)
-  puts person.display
-
-rescue FirstNameError => e
-  puts e.message
-rescue LastNameError => e
-  puts e.message
+  puts Name.new(ARGV[0], ARGV[1]).to_s
+rescue NameError::BlankNameError => e
+  puts "Blank Name Error: #{e.message}"
+rescue NameError::InvalidCaseError => e
+  puts "Invalid Case Error: #{e.message}"
 end
