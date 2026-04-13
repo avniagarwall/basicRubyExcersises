@@ -1,10 +1,16 @@
-if ARGV.length == 0 || ARGV[0].strip.empty?
+if ARGV.empty? || ARGV[0].strip.empty?
   puts "Please provide an input"
   exit
 end
 
-str = ARGV[0]
+class SentenceReverser
+  def initialize(str)
+    @str = str
+  end
 
-result = str.split.reverse.join(" ")
+  def reverse_words
+    @str.split.reverse.join(" ")
+  end
+end
 
-puts "\"#{result}\""
+puts SentenceReverser.new(ARGV[0]).reverse_words
