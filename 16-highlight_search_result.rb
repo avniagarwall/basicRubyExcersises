@@ -3,17 +3,24 @@ if ARGV.length < 2 || ARGV[0].strip.empty? || ARGV[1].strip.empty?
   exit
 end
 
-text = ARGV[0]
-search = ARGV[1]
+class StringSearcher
+  def initialize(text, search)
+    @text   = text
+    @search = search
+    @regex  = Regexp.new(Regexp.escape(@search), Regexp::IGNORECASE)
+  end
 
-regex = Regexp.new(Regexp.escape(search), Regexp::IGNORECASE)
+  def highlight
+    @text.gsub(@regex) { |match| "(#{match})" }
+  end
 
-count = 0
+  def count
+    @text.scan(@regex).length
+  end
 
-result = text.gsub(regex) do |match|
-  count += 1
-  "(#{match})"
+  def to_s
+    "#{highlight}\nTotal occurrences found: #{count}"
+  end
 end
 
-puts result
-puts "Total occurrences found: #{count}"
+puts StringSearcher.new(ARGV[0], ARGV[1]).to_s
