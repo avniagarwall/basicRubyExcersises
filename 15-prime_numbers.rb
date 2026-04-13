@@ -1,24 +1,31 @@
-if ARGV.length == 0 || ARGV[0].strip.empty?
+if ARGV.empty? || ARGV[0].strip.empty?
   puts "Please provide an input"
   exit
 end
 
-n = ARGV[0].to_i
-
-def prime?(num)
-  return false if num < 2
-
-  (2..Math.sqrt(num)).step(1) do |i|
-    return false if num % i == 0
+class PrimeFinder
+  def initialize(n)
+    @n = Integer(n)
+    raise ArgumentError, "Input must be greater than 1" if @n < 2
   end
 
-  true
+  def primes
+    [].tap do |result|
+      2.step(@n) do |num|
+        result << num if prime?(num)
+      end
+    end
+  end
+
+  private
+
+  def prime?(num)
+    return false if num < 2
+    2.step(Math.sqrt(num).to_i) do |i|
+      return false if num % i == 0
+    end
+    true
+  end
 end
 
-primes = []
-
-(2..n).step(1) do |i|
-  primes << i if prime?(i)
-end
-
-puts primes.inspect
+puts PrimeFinder.new(ARGV[0]).primes.inspect
