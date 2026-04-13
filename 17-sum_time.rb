@@ -1,42 +1,46 @@
-if ARGV.length == 0
+if ARGV.empty?
   puts "Please provide an input"
   exit
 end
 
-time_regex = /^\d{1,2}:\d{1,2}:\d{1,2}$/
+class TimeDuration
+  TIME_FORMAT = /\A\d{1,2}:\d{1,2}:\d{1,2}\z/
+  SECONDS_IN_MINUTE = 60
+  SECONDS_IN_HOUR   = 3600
+  SECONDS_IN_DAY    = 86400
 
-total_seconds = 0
-
-ARGV.each do |time_str|
-  unless time_str.match(time_regex)
-    puts "Invalid 24-hour time value"
-    exit
+  def initialize(time_str)
+    raise ArgumentError, "Invalid 24-hour time value: #{time_str}" unless time_str.match?(TIME_FORMAT)
+    @h, @m, @s = time_str.split(":").map(&:to_i)
+    raise ArgumentError, "Invalid 24-hour time value: #{time_str}" if @h >= 24 || @m >= 60 || @s >= 60
   end
 
-  h, m, s = time_str.split(":").map(&:to_i)
-
-  if h >= 24 || m >= 60 || s >= 60
-    puts "Invalid 24-hour time value"
-    exit
+  def to_seconds
+    @h * SECONDS_IN_HOUR + @m * SECONDS_IN_MINUTE + @s
   end
-
-  total_seconds += h * 3600 + m * 60 + s
 end
 
-days = total_seconds / (24 * 3600)
-remaining = total_seconds % (24 * 3600)
+class TimeSummer
+  def initialize(time_strings)
+    @durations = time_strings.map { |t| TimeDuration.new(t) }
+  end
 
-hours = remaining / 3600
-remaining %= 3600
+  def sum
+    total = @durations.sum(&:to_seconds)
 
-minutes = remaining / 60
-seconds = remaining % 60
+    days    = total / TimeDuration::SECONDS_IN_DAY
+    remaining = total % TimeDuration::SECONDS_IN_DAY
 
-time_result = format("%02d:%02d:%02d", hours, minutes, seconds)
+    time = Time.mktime(2000, 1, 1) + remaining
+    result = time.strftime("%H:%M:%S")
 
-if days > 0
-  day_text = days == 1 ? "day" : "days"
-  puts "#{days} #{day_text} & #{time_result}"
-else
-  puts time_result
+    days > 0 ? "#{days} #{days == 1 ? 'day' : 'days'} & #{result}" : result
+  end
+end
+
+begin
+  puts TimeSummer.new(ARGV).sum
+rescue ArgumentError => e
+  puts e.message
+  exit
 end
