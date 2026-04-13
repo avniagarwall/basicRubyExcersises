@@ -1,19 +1,21 @@
-if ARGV.length == 0 || ARGV[0].strip.empty?
+if ARGV.empty? || ARGV[0].strip.empty?
   puts "Please provide an input"
   exit
 end
 
+class Factorial
+  def initialize(n)
+    @n = Integer(n)
+    raise ArgumentError, "Input must be a non-negative integer" if @n < 0
+  end
+
+  def compute
+    (1..@n).inject(1) { |fact, num| fact * num }
+  end
+end
+
 begin
-  n = Integer(ARGV[0])
-
-  raise "Negative number entered" if n < 0
-
-  result = (1..n).inject(1) { |fact, num| fact * num }
-
-  puts result
-
-rescue ArgumentError
-  puts "Invalid input"
-rescue => e
+  puts Factorial.new(ARGV[0]).compute
+rescue ArgumentError => e
   puts e.message
 end
