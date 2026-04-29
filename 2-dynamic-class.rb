@@ -5,10 +5,8 @@ class DynamicClass
   end
 
   def def_method(method_name, method_body)
-    @klass.class_eval do
-      define_method(method_name) do
-        eval(method_body)
-      end
+    @klass.define_method(method_name) do
+      eval(method_body)
     end
   end
 
@@ -32,6 +30,5 @@ method_body = gets.chomp
 
 my_class.def_method(method_name, method_body)
 
-puts "\n--- Result ---"
 puts "Hello, Your class #{class_name} with method #{method_name} is ready. Calling: #{class_name}.new.#{method_name}:"
 puts my_class.call(method_name).inspect
