@@ -1,6 +1,6 @@
 class InteractiveProgram
-  def initialize
-    @binding = binding
+  def initialize(bind)
+    @binding = bind
     @buffer  = []
   end
 
@@ -45,4 +45,4 @@ class InteractiveProgram
   end
 end
 
-InteractiveProgram.new.run
+InteractiveProgram.new(binding).run
