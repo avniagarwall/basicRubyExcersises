@@ -1,5 +1,4 @@
-class SuperString < String
-
+class MyString < String
   def exclude?(substring)
     !include?(substring)
   end
@@ -31,105 +30,76 @@ class SuperString < String
 end
 
 
-# ── Method Metadata ──
-METHOD_INFO = {
-  exclude?:   { args: [{ name: "substring",  required: true  }] },
-  palindrome?: { args: [] },
-  truncate:   { args: [{ name: "max_length", required: true  },
-                       { name: "omission",   required: false, default: "..." }] },
-  repeat:     { args: [{ name: "times",      required: false, default: 2     },
-                       { name: "separator",  required: false, default: " "   }] },
-  word_count: { args: [{ name: "word",       required: false, default: nil   }] },
-  titleize:   { args: [] },
-  remove:     { args: [{ name: "substring",  required: true  },
-                       { name: "global",     required: false, default: true  }] }
-}.freeze
-
-
-# ── CLI ──
-class CLI
-  CUSTOM_METHODS = METHOD_INFO.keys
-
-  def run
-    obj    = create_object
-    method = prompt_method
-    args   = prompt_args(method)
-    execute(obj, method, args)
-  end
-
-  private
-
-  def create_object
-    print "\nEnter an input string: "
-    input = gets.chomp
-    SuperString.new(input)
-  end
-
-  def prompt_method
-    puts "\n#{"=" * 40}"
-    puts "Available Methods:"
-    puts "=" * 40
-    CUSTOM_METHODS.each_with_index do |m, i|
-      args    = METHOD_INFO[m][:args]
-      arg_str = args.map do |a|
-        a[:required] ? "<#{a[:name]}>" : "[#{a[:name]}=#{a[:default].inspect}]"
-      end.join(", ")
-      puts "  #{i + 1}. #{m}(#{arg_str})"
+module MethodPrompt
+  def prompt_method(target_class)
+    puts "\nAvailable Methods:"
+    target_class.instance_methods(false).each_with_index do |m, i|
+      params    = target_class.instance_method(m).parameters
+      param_str = params.map { |type, name| type == :req ? "<#{name}>" : "[#{name}]" }.join(", ")
+      puts "  #{i + 1}. #{m}(#{param_str})"
     end
-    puts "=" * 40
 
     print "\nEnter method name to call: "
-    method = gets.chomp.to_sym
+    gets.chomp.to_sym
+  end
+end
 
-    unless CUSTOM_METHODS.include?(method)
-      puts "Error: Unknown method '#{method}'"
-      exit
+
+module ArgPrompt
+  def prompt_args(target_class, method)
+    params = target_class.instance_method(method).parameters
+    return [] if params.empty?
+
+    params.map do |type, name|
+      prompt_single(name, type == :req)
     end
-
-    method
   end
 
-  def prompt_args(method)
-    args_info = METHOD_INFO[method][:args]
-    return [] if args_info.empty?
-
-    args = []
-    args_info.each do |arg|
-      if arg[:required]
-        print "Enter required argument '#{arg[:name]}': "
-      else
-        print "Enter optional argument '#{arg[:name]}' (default: #{arg[:default].inspect}, press enter to skip): "
-      end
-
+  def prompt_single(name, required)
+    loop do
+      print required ? "Enter required argument '#{name}': " : "Enter optional argument '#{name}' (press enter to skip): "
       input = gets.chomp
-
-      if input.empty? && !arg[:required]
-        args << arg[:default]
-      else
-        args << cast(input)
-      end
+      return cast(input) unless input.empty?
+      return nil         unless required
+      puts "Argument '#{name}' is required, please enter a value."
     end
-
-    args
   end
 
   def cast(value)
     return true  if value == "true"
     return false if value == "false"
     return nil   if value == "nil"
-    return value.to_i if value.match?(/^\d+$/)
+    return value.to_i if value.match?(/\A\d+\z/)
     value
-  end
-
-  def execute(obj, method, args)
-    puts "\n#{"=" * 40}"
-    puts "Executing: #{obj.inspect}.#{method}(#{args.map(&:inspect).join(", ")})"
-    puts "=" * 40
-
-    result = obj.public_send(method, *args)
-
-    puts "Result: #{result.inspect}"
   end
 end
 
-CLI.new.run
+
+class StringRunner
+  include MethodPrompt
+  include ArgPrompt
+
+  def initialize(target_class)
+    @target_class = target_class
+  end
+
+  def run
+    print "\nEnter an input string: "
+    obj = @target_class.new(gets.chomp)
+
+    method = prompt_method(@target_class)
+
+    unless @target_class.instance_methods(false).include?(method)
+      puts "Unknown method '#{method}'"
+      return
+    end
+
+    args   = prompt_args(@target_class, method)
+    result = obj.public_send(method, *args)
+
+    puts "\nResult: #{result.inspect}"
+  end
+end
+
+
+StringRunner.new(MyString).run
